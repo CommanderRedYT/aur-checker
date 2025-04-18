@@ -41,12 +41,17 @@ jobs:
       # clone yay
       - name: Install aur helper
         run: |
+          useradd -m -s /bin/bash -G wheel aur
+          echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          su aur
+          cd
           pacman -Sy --noconfirm git base-devel
           git clone https://aur.archlinux.org/yay-bin.git
           cd yay-bin
           makepkg -si --noconfirm
           cd ..
           rm -rf yay-bin
+          exit # exit the su session
 
       # try to install the package
       - name: Install aur package ${{ matrix.package }}
