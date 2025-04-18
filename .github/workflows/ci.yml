@@ -14,8 +14,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure based on packages.json
-        id: set-matrix
+      - name: Fetch package list from AUR api
+        id: fetch
+        run: |
+          # fetch https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer and convert it to array of names
+          packages=$(curl -s "https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer" | jq -r '.results[].Name')
+          # check if the package list is empty
+          if [ -z "$packages" ]; then
+            echo "No packages found"
+            exit 1
+          fi
+          # convert to json array
+          matrix=$(echo $packages | jq -R -c 'split(" ")')
+          echo "Generated matrix: $matrix"
+          echo "fetched_matrix=$matrix" >> $GITHUB_ENV
+
+      - name: Use packages.json as fallback
+        id: fallback
         run: | # { packages: [{ name: "foo" }]} => [foo]
           echo "Generating matrix from packages.json"
           echo "Reading packages.json"
@@ -24,6 +39,21 @@ jobs:
           # convert to json array
           matrix=$(echo $packages | jq -R -c 'split(" ")')
           echo "Generated matrix: $matrix"
+          echo "matrix=$matrix" >> $GITHUB_ENV
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          # check if the matrix is empty
+          if [ -z "${{ env.fetched_matrix }}" ]; then
+            echo "No packages found in AUR, using fallback"
+            matrix="${{ env.matrix }}"
+          else
+            matrix="${{ env.fetched_matrix }}"
+          fi
+
+          echo "Using the following matrix: $matrix"
+
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   check:
