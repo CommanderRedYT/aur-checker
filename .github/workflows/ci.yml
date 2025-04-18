@@ -57,16 +57,33 @@ jobs:
           fi
 
 
-      # try to install the package
       - name: Install aur package ${{ matrix.package }}
         id: install
         continue-on-error: true
         run: |
           set -e
-          yay -Syu --noconfirm --needed ${{ matrix.package }} > /tmp/install.log 2>&1
-          yay -Qdtq | pacman -Rns --noconfirm -
-          yay -Rns --noconfirm ${{ matrix.package }} > /tmp/remove.log 2>&1
-          echo "Package ${{ matrix.package }} installed and removed successfully."
+          # install the package
+          su - aur -c "yay --noconfirm -S ${{ matrix.package }} 2>&1 | tee /tmp/install.log"
+          # check if the package was installed
+          if ! pacman -Q ${{ matrix.package }} &> /dev/null
+          then
+              echo "Package ${{ matrix.package }} could not be installed"
+              exit 1
+          fi
+      
+      - name: Remove aur package ${{ matrix.package }}
+        id: remove
+        continue-on-error: true
+        run: |
+          set -e
+          # remove the package
+          su - aur -c "yay --noconfirm -R ${{ matrix.package }} 2>&1 | tee /tmp/remove.log"
+          # check if the package was removed
+          if pacman -Q ${{ matrix.package }} &> /dev/null
+          then
+              echo "Package ${{ matrix.package }} could not be removed"
+              exit 1
+          fi
         
       - name: Upload install logs
         uses: actions/upload-artifact@v4
