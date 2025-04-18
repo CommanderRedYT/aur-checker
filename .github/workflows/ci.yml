@@ -14,15 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install jq
-        run: apt install -y jq
-
       - name: Configure based on packages.json
         id: set-matrix
         run: | # { packages: [{ name: "foo" }]} => [foo]
-          packages=$(jq -r '.packages | map(.name)' packages.json)
-          matrix=$(echo $packages | jq -R -s 'split(" ") | map({package: .})')
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "Generating matrix from packages.json"
+          echo "Reading packages.json"
+          packages=$(jq -r '.packages[].name' packages.json)
+          echo "Found packages: $packages"
+          # convert to json array
+          matrix=$(echo $packages | jq -R 'split(" ")')
+          echo "Generated matrix: $matrix"
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   check:
     name: Check aur package ${{ matrix.package }}
