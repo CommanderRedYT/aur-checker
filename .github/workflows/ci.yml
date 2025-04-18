@@ -41,7 +41,7 @@ jobs:
       # clone yay
       - name: Install aur helper
         run: |
-          pacman -Sy --noconfirm git base-devel sudo
+          pacman -Syu --noconfirm git base-devel sudo
           useradd -m -s /bin/bash -G wheel aur
           echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
           # switch to the new user
@@ -63,7 +63,7 @@ jobs:
         continue-on-error: true
         run: |
           set -e
-          yay -S --noconfirm --needed ${{ matrix.package }} > /tmp/install.log 2>&1
+          yay -Syu --noconfirm --needed ${{ matrix.package }} > /tmp/install.log 2>&1
           yay -Qdtq | pacman -Rns --noconfirm -
           yay -Rns --noconfirm ${{ matrix.package }} > /tmp/remove.log 2>&1
           echo "Package ${{ matrix.package }} installed and removed successfully."
