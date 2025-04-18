@@ -11,6 +11,21 @@
         },
         {
             "name": "prometheus-adaptec-exporter"
+        },
+        {
+            "name": "python-rgb565-converter"
+        },
+        {
+            "name": "prometheus-tasmota-power-exporter"
+        },
+        {
+            "name": "prometheus-apple-refurbed"
+        },
+        {
+            "name": "wled-gui-appimage"
+        },
+        {
+            "name": "python-price-parser"
         }
     ]
 }
