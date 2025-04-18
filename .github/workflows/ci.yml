@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure based on packages.json
+      - name: Configure matrix
         id: set-matrix
         run: | # { packages: [{ name: "foo" }]} => [foo]
           # download my packages from aur
@@ -45,7 +45,7 @@ jobs:
           echo "Found packages: $packages"
           # convert to json array
           matrix=$(echo $packages | jq -R -c 'split(" ")')
-          echo "Generated matrix: $matrix"
+          echo "Generated matrix using $file: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   check:
