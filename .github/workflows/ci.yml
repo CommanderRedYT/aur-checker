@@ -59,6 +59,8 @@ jobs:
 
       # try to install the package
       - name: Install aur package ${{ matrix.package }}
+        id: install
+        continue-on-error: true
         run: |
           yay -S --noconfirm --needed ${{ matrix.package }} > /tmp/install.log 2>&1
           yay -Qdtq | pacman -Rns --noconfirm -
@@ -77,3 +79,9 @@ jobs:
         with:
           name: aur-remove-log-${{ matrix.package }}
           path: /tmp/remove.log
+
+      - name: Fail if install failed
+        if: steps.install.outcome == 'failure'
+        run: |
+          echo "Package ${{ matrix.package }} failed to install."
+          exit 1
