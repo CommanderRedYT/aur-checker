@@ -35,7 +35,13 @@ jobs:
 
           echo "Generating matrix from $file"
           cat $file
-          packages=$(jq -r '.packages[].name' $file)
+          packages=""
+          # if file = online.json, use online.json format
+          if [ "$file" = "online.json" ]; then
+            packages=$(jq -r '.results[].Name' $file)
+          else
+            packages=$(jq -r '.packages[].name' $file)
+          fi
           echo "Found packages: $packages"
           # convert to json array
           matrix=$(echo $packages | jq -R -c 'split(" ")')
