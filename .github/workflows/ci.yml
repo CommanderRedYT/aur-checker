@@ -22,7 +22,7 @@ jobs:
           packages=$(jq -r '.packages[].name' packages.json)
           echo "Found packages: $packages"
           # convert to json array
-          matrix=$(echo $packages | jq -R 'split(" ")')
+          matrix=$(echo $packages | jq -R -c 'split(" ")')
           echo "Generated matrix: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
