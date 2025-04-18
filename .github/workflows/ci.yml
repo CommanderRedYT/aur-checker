@@ -1,0 +1,63 @@
+name: Check aur packages
+on:
+  push:
+  schedule:
+    - cron: '0 */12 * * *'
+  
+jobs:
+  generate-matrix:
+    name: Generate ci matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure based on packages.json
+        id: set-matrix
+        run: | # { packages: [{ name: "foo" }]} => [foo]
+          packages=$(jq -r '.packages | map(.name)' packages.json)
+          matrix=$(echo $packages | jq -R -s 'split(" ") | map({package: .})')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  check:
+    name: Check aur package ${{ matrix.package }}
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --user root
+    needs: generate-matrix
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      # clone yay
+      - name: Install aur helper
+        run: |
+          pacman -Sy --noconfirm git base-devel
+          git clone https://aur.archlinux.org/yay-bin.git
+          cd yay-bin
+          makepkg -si --noconfirm
+          cd ..
+          rm -rf yay-bin
+
+      # try to install the package
+      - name: Install aur package ${{ matrix.package }}
+        run: |
+          yay -S --noconfirm --needed ${{ matrix.package }} > /tmp/install.log 2>&1
+          yay -Qdtq | pacman -Rns --noconfirm -
+          yay -Rns --noconfirm ${{ matrix.package }} > /tmp/remove.log 2>&1
+          echo "Package ${{ matrix.package }} installed and removed successfully."
+        
+      # upload logs
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: aur-install-log-${{ matrix.package }}
+          path: /tmp/install.log
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: aur-remove-log-${{ matrix.package }}
+          path: /tmp/remove.log

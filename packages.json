@@ -1,0 +1,16 @@
+{
+    "packages": [
+        {
+            "name": "python-smart-prom-next"
+        },
+        {
+            "name": "qtwebsockettester-git"
+        },
+        {
+            "name": "qtmodbustester-git"
+        },
+        {
+            "name": "prometheus-adaptec-exporter"
+        }
+    ]
+}
