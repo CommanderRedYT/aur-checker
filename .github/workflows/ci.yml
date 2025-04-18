@@ -62,6 +62,7 @@ jobs:
         id: install
         continue-on-error: true
         run: |
+          set -e
           yay -S --noconfirm --needed ${{ matrix.package }} > /tmp/install.log 2>&1
           yay -Qdtq | pacman -Rns --noconfirm -
           yay -Rns --noconfirm ${{ matrix.package }} > /tmp/remove.log 2>&1
