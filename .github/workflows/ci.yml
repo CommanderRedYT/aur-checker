@@ -14,49 +14,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch package list from AUR api
-        id: fetch
-        continue-on-error: true
-        run: |
-          # fetch https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer and convert it to array of names
-          packages=$(curl -s "https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer" | jq -r '.results[].Name')
-          # check if the package list is empty
-          if [ -z "$packages" ]; then
-            echo "No packages found"
-            exit 1
-          fi
-          echo "Found packages: $packages"
-          # convert to json array
-          matrix=$(echo $packages | jq -R -c 'split(" ")')
-          echo "Generated matrix: $matrix"
-          echo "fetched_matrix=$matrix" >> $GITHUB_ENV
-
-      - name: Use packages.json as fallback
-        id: fallback
-        if: ${{ steps.fetch.outcome == 'failure' }}
-        run: | # { packages: [{ name: "foo" }]} => [foo]
-          echo "Generating matrix from packages.json"
-          echo "Reading packages.json"
-          packages=$(jq -r '.packages[].name' packages.json)
-          echo "Found packages: $packages"
-          # convert to json array
-          matrix=$(echo $packages | jq -R -c 'split(" ")')
-          echo "Generated matrix: $matrix"
-          echo "matrix=$matrix" >> $GITHUB_ENV
-
-      - name: Set matrix
+      - name: Configure based on packages.json
         id: set-matrix
-        run: |
-          # check if the matrix is empty
-          if [ -z "${{ env.fetched_matrix }}" ]; then
-            echo "No packages found in AUR, using fallback"
-            matrix="${{ env.matrix }}"
-          else
-            matrix="${{ env.fetched_matrix }}"
+        run: | # { packages: [{ name: "foo" }]} => [foo]
+          # download my packages from aur
+          curl -sSL https://aur.archlinux.org/cgit/aur.git/plain/packages.json -o online.json
+
+          file="online.json"
+
+          # check if online.json exists
+          if [ ! -f "$file" ]; then
+              echo "Online packages.json not found, using local packages.json"
+              # check if packages.json exists
+              if [ ! -f "packages.json" ]; then
+                  echo "packages.json not found"
+                  exit 1
+              fi
+              file="packages.json"
           fi
 
-          echo "Using the following matrix: $matrix"
-
+          echo "Generating matrix from $${file}"
+          packages=$(jq -r '.packages[].name' $${file})
+          echo "Found packages: $packages"
+          # convert to json array
+          matrix=$(echo $packages | jq -R -c 'split(" ")')
+          echo "Generated matrix: $matrix"
           echo "matrix=$matrix" >> $GITHUB_OUTPUT
 
   check:
