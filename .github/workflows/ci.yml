@@ -68,18 +68,27 @@ jobs:
           yay -Rns --noconfirm ${{ matrix.package }} > /tmp/remove.log 2>&1
           echo "Package ${{ matrix.package }} installed and removed successfully."
         
-      # upload logs
-      - name: Upload logs
+      - name: Upload install logs
         uses: actions/upload-artifact@v4
         with:
           name: aur-install-log-${{ matrix.package }}
           path: /tmp/install.log
 
-      - name: Upload logs
+      - name: Upload remove logs
         uses: actions/upload-artifact@v4
         with:
           name: aur-remove-log-${{ matrix.package }}
           path: /tmp/remove.log
+
+      - name: Print install log
+        run: |
+          echo "Install log for ${{ matrix.package }}:"
+          cat /tmp/install.log
+
+      - name: Print remove log
+        run: |
+          echo "Remove log for ${{ matrix.package }}:"
+          cat /tmp/remove.log
 
       - name: Fail if install failed
         if: steps.install.outcome == 'failure'
