@@ -97,16 +97,6 @@ jobs:
           name: aur-remove-log-${{ matrix.package }}
           path: /tmp/remove.log
 
-      - name: Print install log
-        run: |
-          echo "Install log for ${{ matrix.package }}:"
-          cat /tmp/install.log
-
-      - name: Print remove log
-        run: |
-          echo "Remove log for ${{ matrix.package }}:"
-          cat /tmp/remove.log
-
       - name: Fail if install failed
         if: steps.install.outcome == 'failure'
         run: |
