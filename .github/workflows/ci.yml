@@ -16,6 +16,7 @@ jobs:
 
       - name: Fetch package list from AUR api
         id: fetch
+        continue-on-error: true
         run: |
           # fetch https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer and convert it to array of names
           packages=$(curl -s "https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer" | jq -r '.results[].Name')
@@ -24,6 +25,7 @@ jobs:
             echo "No packages found"
             exit 1
           fi
+          echo "Found packages: $packages"
           # convert to json array
           matrix=$(echo $packages | jq -R -c 'split(" ")')
           echo "Generated matrix: $matrix"
@@ -31,6 +33,7 @@ jobs:
 
       - name: Use packages.json as fallback
         id: fallback
+        if: ${{ steps.fetch.outcome == 'failure' }}
         run: | # { packages: [{ name: "foo" }]} => [foo]
           echo "Generating matrix from packages.json"
           echo "Reading packages.json"
