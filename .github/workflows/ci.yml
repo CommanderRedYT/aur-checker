@@ -18,7 +18,7 @@ jobs:
         id: set-matrix
         run: | # { packages: [{ name: "foo" }]} => [foo]
           # download my packages from aur
-          curl -sSL https://aur.archlinux.org/cgit/aur.git/plain/packages.json -o online.json
+          curl -sSL https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer -o online.json
 
           file="online.json"
 
