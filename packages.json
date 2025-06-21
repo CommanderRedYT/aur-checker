@@ -26,6 +26,9 @@
         },
         {
             "name": "python-price-parser"
+        },
+        {
+            "name": "sturmflut-git"
         }
     ]
 }
