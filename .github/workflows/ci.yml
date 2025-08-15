@@ -17,10 +17,10 @@ jobs:
       - name: Configure matrix
         id: set-matrix
         run: | # { packages: [{ name: "foo" }]} => [foo]
-          # download my packages from aur
-          curl -sSL https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer -o online.json
 
           file="online.json"
+          # download my packages from aur
+          curl -sSL https://aur.archlinux.org/rpc/v5/search/CommanderRedYT?by=maintainer -o "$file" || true
 
           # check if online.json exists
           if [ ! -f "$file" ]; then
